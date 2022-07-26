@@ -105,6 +105,10 @@ class Enrollment(models.Model):
     # Foreign key to lesson
     # question text
     # question grade/mark
+class Question(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    question_text = models.CharField(null=False, max_length=500)
+    grade_point = models.IntegerField()
 
     # <HINT> A sample model method to calculate if learner get the score of the question
     #def is_get_score(self, selected_ids):
@@ -114,15 +118,26 @@ class Enrollment(models.Model):
     #        return True
     #    else:
     #        return False
+    def is_get_score(self, selected_ids):
+       all_answers = self.choice_set.filter(is_correct=True).count()
+       selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
+       if all_answers == selected_correct:
+           return True
+       else:
+           return False
 
 
 #  <HINT> Create a Choice Model with:
-    # Used to persist choice content for a question
-    # One-To-Many (or Many-To-Many if you want to reuse choices) relationship with Question
+@@ -122,13 +121,16 @@ class Enrollment(models.Model):
     # Choice content
     # Indicate if this choice of the question is a correct one or not
     # Other fields and methods you would like to design
 # class Choice(models.Model):
+
+class Choice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(null=False, max_length=500)
+    correct = models.BooleanField()
 
 # <HINT> The submission model
 # One enrollment could have multiple submission
@@ -131,4 +146,7 @@ class Enrollment(models.Model):
 #class Submission(models.Model):
 #    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
 #    choices = models.ManyToManyField(Choice)
-#    Other fields and methods you would like to design
+#    Other fields and methods you would like to design 
+class Submission(models.Model):
+   enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+   choices = models.ManyToManyField(Choice)
